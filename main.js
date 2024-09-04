@@ -13,7 +13,7 @@ async function main() {
     benchName: core.getInput("benchName"),
     package: core.getInput("package"),
     features: core.getInput("features"),
-    defaultFeatures: core.getInput("defaultFeatures"),
+    defaultFeatures: core.getBooleanInput("defaultFeatures"),
   };
   core.debug(`Inputs: ${inspect(inputs)}`);
 
