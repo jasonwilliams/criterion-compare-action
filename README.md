@@ -27,15 +27,15 @@ jobs:
       - uses: actions/checkout@v3
       - uses: boa-dev/criterion-compare-action@v3
         with:
-          cwd: "subDirectory (optional)"
+          cwd: 'subDirectory (optional)'
           # Optional. Compare only this package
-          package: "example-package"
+          package: 'example-package'
           # Optional. Compare only this benchmark target
-          benchName: "example-bench-target"
+          benchName: 'example-bench-target'
           # Optional. Disables the default features of a crate
           defaultFeatures: false
           # Optional. Features activated in the benchmark
-          features: "async,tokio-support"
+          features: 'async,tokio-support'
           # Needed. The name of the branch to compare with. This default uses the branch which is being pulled against
           branchName: ${{ github.base_ref }}
           # Optional. Default is `${{ github.token }}`.

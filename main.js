@@ -49,7 +49,7 @@ async function main() {
   await exec.exec(
     'cargo',
     benchCmd.concat(['--', '--save-baseline', 'changes']),
-    options
+    options,
   );
   core.debug('Changes benchmarked');
   await exec.exec('git', ['fetch']);
@@ -61,7 +61,7 @@ async function main() {
   await exec.exec(
     'cargo',
     benchCmd.concat(['--', '--save-baseline', 'base']),
-    options
+    options,
   );
   core.debug('Base benchmarked');
 
@@ -95,7 +95,7 @@ async function main() {
       body: resultsAsMarkdown,
     });
     core.info(
-      `Created comment id '${comment.id}' on issue '${contextObj.number}' in '${contextObj.repo}'.`
+      `Created comment id '${comment.id}' on issue '${contextObj.number}' in '${contextObj.repo}'.`,
     );
     core.setOutput('comment-id', comment.id);
   } catch (err) {
@@ -182,11 +182,11 @@ function convertToMarkdown(results) {
           let changesUnits = changesDurSplit[1].slice(-2);
           let changesDurSecs = convertDurToSeconds(
             changesDurSplit[0],
-            changesUnits
+            changesUnits,
           );
           let changesErrorSecs = convertDurToSeconds(
             changesDurSplit[1].slice(0, -2),
-            changesUnits
+            changesUnits,
           );
 
           let baseDurSplit = baseDuration.split('±');
@@ -194,7 +194,7 @@ function convertToMarkdown(results) {
           let baseDurSecs = convertDurToSeconds(baseDurSplit[0], baseUnits);
           let baseErrorSecs = convertDurToSeconds(
             baseDurSplit[1].slice(0, -2),
-            baseUnits
+            baseUnits,
           );
 
           difference = -(1 - changesDurSecs / baseDurSecs) * 100;
@@ -207,7 +207,7 @@ function convertToMarkdown(results) {
               changesDurSecs,
               changesErrorSecs,
               baseDurSecs,
-              baseErrorSecs
+              baseErrorSecs,
             )
           ) {
             if (changesDurSecs < baseDurSecs) {
@@ -231,7 +231,7 @@ function convertToMarkdown(results) {
         name = name.replace(/\|/g, '\\|');
 
         return `| ${name} | ${baseDuration} | ${changesDuration} | ${difference} |`;
-      }
+      },
     )
     .join('\n');
 
@@ -289,7 +289,7 @@ function convertToTableObject(results) {
           changesDuration,
           difference,
         };
-      }
+      },
     );
 
   return benchResults;
