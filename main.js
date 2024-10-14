@@ -1,69 +1,69 @@
-const { inspect } = require("util");
-const exec = require("@actions/exec");
-const core = require("@actions/core");
-const github = require("@actions/github");
+const { inspect } = require('util');
+const exec = require('@actions/exec');
+const core = require('@actions/core');
+const github = require('@actions/github');
 
 const context = github.context;
 
 async function main() {
   const inputs = {
-    token: core.getInput("token", { required: true }),
-    branchName: core.getInput("branchName", { required: true }),
-    cwd: core.getInput("cwd"),
-    benchName: core.getInput("benchName"),
-    package: core.getInput("package"),
-    features: core.getInput("features"),
-    defaultFeatures: core.getInput("defaultFeatures"),
+    token: core.getInput('token', { required: true }),
+    branchName: core.getInput('branchName', { required: true }),
+    cwd: core.getInput('cwd'),
+    benchName: core.getInput('benchName'),
+    package: core.getInput('package'),
+    features: core.getInput('features'),
+    defaultFeatures: core.getInput('defaultFeatures'),
   };
   core.debug(`Inputs: ${inspect(inputs)}`);
 
   const options = {};
-  let myOutput = "";
-  let myError = "";
+  let myOutput = '';
+  let myError = '';
   if (inputs.cwd) {
     options.cwd = inputs.cwd;
   }
 
-  let benchCmd = ["bench"];
+  let benchCmd = ['bench'];
 
   if (inputs.package) {
-    benchCmd = benchCmd.concat(["--package", inputs.package]);
+    benchCmd = benchCmd.concat(['--package', inputs.package]);
   }
 
   if (inputs.benchName) {
-    benchCmd = benchCmd.concat(["--bench", inputs.benchName]);
+    benchCmd = benchCmd.concat(['--bench', inputs.benchName]);
   }
 
   if (!inputs.defaultFeatures) {
-    benchCmd = benchCmd.concat(["--no-default-features"]);
+    benchCmd = benchCmd.concat(['--no-default-features']);
   }
 
   if (inputs.features) {
-    benchCmd = benchCmd.concat(["--features", inputs.features]);
+    benchCmd = benchCmd.concat(['--features', inputs.features]);
   }
 
-  core.debug("### Install Critcmp ###");
-  await exec.exec("cargo", ["install", "critcmp"]);
+  core.debug('### Install Critcmp ###');
+  await exec.exec('cargo', ['install', 'critcmp']);
 
-  core.debug("### Benchmark starting ###");
+  core.debug('### Benchmark starting ###');
   await exec.exec(
-    "cargo",
-    benchCmd.concat(["--", "--save-baseline", "changes"]),
+    'cargo',
+    benchCmd.concat(['--', '--save-baseline', 'changes']),
     options
   );
-  core.debug("Changes benchmarked");
-  await exec.exec("git", ["fetch"]);
-  await exec.exec("git", [
-    "checkout",
-    core.getInput("branchName") || github.base_ref,
+  core.debug('Changes benchmarked');
+  await exec.exec('git', ['fetch']);
+  await exec.exec('git', [
+    'checkout',
+    core.getInput('branchName') || github.base_ref,
   ]);
-  core.debug("Checked out to base branch");
+  core.debug('Checked out to base branch');
   await exec.exec(
-    "cargo",
-    benchCmd.concat(["--", "--save-baseline", "base"]),
+    'cargo',
+    benchCmd.concat(['--', '--save-baseline', 'base']),
     options
   );
-  core.debug("Base benchmarked");
+  core.debug('Base benchmarked');
 
   options.listeners = {
     stdout: (data) => {
@@ -74,12 +74,13 @@ async function main() {
     },
   };
 
-  await exec.exec("critcmp", ["base", "changes"], options);
+  await exec.exec('critcmp', ['base', 'changes'], options);
 
-  core.setOutput("stdout", myOutput);
-  core.setOutput("stderr", myError);
+  core.setOutput('stdout', myOutput);
+  core.setOutput('stderr', myError);
 
   const resultsAsMarkdown = convertToMarkdown(myOutput);
+  core.setOutput('markdownTable', resultsAsMarkdown);
 
   // An authenticated instance of `@octokit/rest`
   const octokit = github.getOctokit(inputs.token);
@@ -96,10 +97,10 @@ async function main() {
     core.info(
       `Created comment id '${comment.id}' on issue '${contextObj.number}' in '${contextObj.repo}'.`
     );
-    core.setOutput("comment-id", comment.id);
+    core.setOutput('comment-id', comment.id);
   } catch (err) {
     core.warning(`Failed to comment: ${err}`);
-    core.info("Commenting is not possible from forks.");
+    core.info('Commenting is not possible from forks.');
 
     // If we can't post to the comment, display results here.
     // forkedRepos only have READ ONLY access on GITHUB_TOKEN
@@ -108,22 +109,22 @@ async function main() {
     console.table(resultsAsObject);
   }
 
-  core.debug("Succesfully run!");
+  core.debug('Succesfully run!');
 }
 
 function convertDurToSeconds(dur, units) {
   let seconds;
   switch (units) {
-    case "s":
+    case 's':
       seconds = dur;
       break;
-    case "ms":
+    case 'ms':
       seconds = dur / 1000;
       break;
-    case "µs":
+    case 'µs':
       seconds = dur / 1000000;
       break;
-    case "ns":
+    case 'ns':
       seconds = dur / 1000000000;
       break;
     default:
@@ -151,7 +152,7 @@ function convertToMarkdown(results) {
     full prompt                      1.08     46.0±0.90ms        ? B/sec    1.00     42.7±0.79ms        ? B/sec
   */
 
-  let resultLines = results.trimRight().split("\n");
+  let resultLines = results.trimRight().split('\n');
   let benchResults = resultLines
     .slice(2) // skip headers
     .map((row) => row.split(/\s{2,}/)) // split if 2+ spaces together
@@ -165,19 +166,19 @@ function convertToMarkdown(results) {
         changesDuration,
         _changesBandwidth,
       ]) => {
-        let baseUndefined = typeof baseDuration === "undefined";
-        let changesUndefined = typeof changesDuration === "undefined";
+        let baseUndefined = typeof baseDuration === 'undefined';
+        let changesUndefined = typeof changesDuration === 'undefined';
 
         if (!name || (baseUndefined && changesUndefined)) {
-          return "";
+          return '';
         }
 
-        let difference = "N/A";
+        let difference = 'N/A';
         if (!baseUndefined && !changesUndefined) {
           changesFactor = Number(changesFactor);
           baseFactor = Number(baseFactor);
 
-          let changesDurSplit = changesDuration.split("±");
+          let changesDurSplit = changesDuration.split('±');
           let changesUnits = changesDurSplit[1].slice(-2);
           let changesDurSecs = convertDurToSeconds(
             changesDurSplit[0],
@@ -188,7 +189,7 @@ function convertToMarkdown(results) {
             changesUnits
           );
 
-          let baseDurSplit = baseDuration.split("±");
+          let baseDurSplit = baseDuration.split('±');
           let baseUnits = baseDurSplit[1].slice(-2);
           let baseDurSecs = convertDurToSeconds(baseDurSplit[0], baseUnits);
           let baseErrorSecs = convertDurToSeconds(
@@ -198,9 +199,9 @@ function convertToMarkdown(results) {
 
           difference = -(1 - changesDurSecs / baseDurSecs) * 100;
           difference =
-            (changesDurSecs <= baseDurSecs ? "" : "+") +
+            (changesDurSecs <= baseDurSecs ? '' : '+') +
             difference.toFixed(2) +
-            "%";
+            '%';
           if (
             isSignificant(
               changesDurSecs,
@@ -220,19 +221,19 @@ function convertToMarkdown(results) {
         }
 
         if (baseUndefined) {
-          baseDuration = "N/A";
+          baseDuration = 'N/A';
         }
 
         if (changesUndefined) {
-          changesDuration = "N/A";
+          changesDuration = 'N/A';
         }
 
-        name = name.replace(/\|/g, "\\|");
+        name = name.replace(/\|/g, '\\|');
 
         return `| ${name} | ${baseDuration} | ${changesDuration} | ${difference} |`;
       }
     )
-    .join("\n");
+    .join('\n');
 
   let shortSha = context.sha.slice(0, 7);
   return `## Benchmark for ${shortSha}
@@ -256,7 +257,7 @@ function convertToTableObject(results) {
     full prompt                      1.08     46.0±0.90ms        ? B/sec    1.00     42.7±0.79ms        ? B/sec
   */
 
-  let resultLines = results.split("\n");
+  let resultLines = results.split('\n');
   let benchResults = resultLines
     .slice(2) // skip headers
     .map((row) => row.split(/\s{2,}/)) // split if 2+ spaces together
@@ -275,7 +276,7 @@ function convertToTableObject(results) {
 
         let difference = -(1 - changesFactor / baseFactor) * 100;
         difference =
-          (changesFactor <= baseFactor ? "" : "+") + difference.toPrecision(2);
+          (changesFactor <= baseFactor ? '' : '+') + difference.toPrecision(2);
         if (changesFactor < baseFactor) {
           changesDuration = `**${changesDuration}**`;
         } else if (changesFactor > baseFactor) {
