@@ -1,34 +1,37 @@
-name: "Criterion Compare PRs"
-description: "Run Criterion against PRs"
+name: 'Criterion Compare PRs'
+description: 'Run Criterion against PRs'
 inputs:
   token:
-    description: "Github Token required to comment in the PR"
+    description: 'Github Token required to comment in the PR'
     required: false
     default: ${{ github.token }}
   branchName:
-    description: "The name of the branch to compare with. This default uses the branch which is being pulled against"
+    description: 'The name of the branch to compare with. This default uses the branch which is being pulled against'
     required: true
-    default: ""
+    default: ''
   cwd:
-    description: "Sets the directory to run the benchmarks, relative to the project directory"
+    description: 'Sets the directory to run the benchmarks, relative to the project directory'
     required: false
-    default: ""
+    default: ''
   package:
-    description: "Benchmark only the specified packages"
+    description: 'Benchmark only the specified packages'
     required: false
-    default: ""
+    default: ''
   benchName:
-    description: "Compare only this benchmark"
+    description: 'Compare only this benchmark'
     required: false
-    default: ""
+    default: ''
   features:
-    description: "A list of comma seperated features that are activated for this benchmark"
+    description: 'A list of comma seperated features that are activated for this benchmark'
     required: false
-    default: ""
+    default: ''
   defaultFeatures:
-    description: "Enable the default features of a crate while running the benchmark, usually the default features are enabled"
+    description: 'Enable the default features of a crate while running the benchmark, usually the default features are enabled'
     required: false
-    default: true
+    default: 'true'
+outputs:
+  markdownTable:
+    description: 'The markdown table that was generated'
 runs:
-  using: "node16"
-  main: "dist/index.js"
+  using: 'node20'
+  main: 'dist/index.js'
